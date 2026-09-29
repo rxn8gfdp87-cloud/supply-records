@@ -9,7 +9,7 @@ const STORAGE_KEYS = {
 };
 
 // Flag to use Firebase or localStorage
-const USE_FIREBASE = true
+const USE_FIREBASE = false
 
 export const storage = {
   getTestRecords: async () => {

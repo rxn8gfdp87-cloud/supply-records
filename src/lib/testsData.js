@@ -8,12 +8,7 @@ export const TEST_CATEGORIES = {
     { name: 'Chlamydia', category: 'STIs & STDs' },
     { name: 'HSV 1 & 2 IgM_IgG', category: 'STIs & STDs' },
     { name: 'HPV DNA', category: 'STIs & STDs' },
-    { name: 'Trichomonas', category: 'STIs & STDs' },
-    { name: 'Bacterial Vaginosis', category: 'STIs & STDs' },
-    { name: 'Candidiasis', category: 'STIs & STDs' },
-    { name: 'Chancroid', category: 'STIs & STDs' },
-    { name: 'Lymphogranuloma Venereum', category: 'STIs & STDs' },
-    { name: 'Donovanosis', category: 'STIs & STDs' }
+    { name: 'Trichomonas', category: 'STIs & STDs' }
   ],
   'Chemistry': [
     { name: 'RBS_FBS', category: 'Chemistry' },
@@ -21,51 +16,22 @@ export const TEST_CATEGORIES = {
     { name: 'LFT', category: 'Chemistry' },
     { name: 'EUCR', category: 'Chemistry' },
     { name: 'Kidney Function Test', category: 'Chemistry' },
-    { name: 'Electrolytes', category: 'Chemistry' },
-    { name: 'Cardiac Enzymes', category: 'Chemistry' },
     { name: 'Thyroid Function Test', category: 'Chemistry' },
-    { name: 'Pancreatic Enzymes', category: 'Chemistry' },
-    { name: 'Bone Profile', category: 'Chemistry' },
-    { name: 'Iron Studies', category: 'Chemistry' },
     { name: 'Vitamin B12 & Folate', category: 'Chemistry' },
     { name: 'HbA1c', category: 'Chemistry' },
-    { name: 'Uric Acid', category: 'Chemistry' },
-    { name: 'Amylase_Lipase', category: 'Chemistry' }
+    { name: 'Uric Acid', category: 'Chemistry' }
   ],
   'Hematology': [
     { name: 'CBC', category: 'Hematology' },
     { name: 'ESR', category: 'Hematology' },
-    { name: 'CRP', category: 'Hematology' },
-    { name: 'Blood Group & Rh', category: 'Hematology' },
-    { name: 'Peripheral Smear', category: 'Hematology' },
-    { name: 'Reticulocyte Count', category: 'Hematology' },
-    { name: 'Coagulation Profile', category: 'Hematology' },
-    { name: 'D-Dimer', category: 'Hematology' },
-    { name: 'Fibrinogen', category: 'Hematology' },
-    { name: 'PT_INR', category: 'Hematology' },
-    { name: 'APTT', category: 'Hematology' }
+    { name: 'Blood Group & Rh', category: 'Hematology' }
   ],
   'Immunology': [
-    { name: 'ANA', category: 'Immunology' },
-    { name: 'Anti-CCP', category: 'Immunology' },
-    { name: 'RF', category: 'Immunology' },
-    { name: 'ASO', category: 'Immunology' },
-    { name: 'CRP', category: 'Immunology' },
-    { name: 'Anti-TPO', category: 'Immunology' },
-    { name: 'Anti-TG', category: 'Immunology' },
-    { name: 'IgE', category: 'Immunology' },
-    { name: 'Complement C3_C4', category: 'Immunology' },
-    { name: 'ANA Profile', category: 'Immunology' }
   ],
   'Endocrinology': [
     { name: 'TSH, FT3, FT4', category: 'Endocrinology' },
     { name: 'Insulin', category: 'Endocrinology' },
-    { name: 'C-Peptide', category: 'Endocrinology' },
-    { name: 'Cortisol', category: 'Endocrinology' },
-    { name: 'Growth Hormone', category: 'Endocrinology' },
-    { name: 'IGF-1', category: 'Endocrinology' },
-    { name: 'Prolactin', category: 'Endocrinology' },
-    { name: 'ACTH', category: 'Endocrinology' }
+    { name: 'Prolactin', category: 'Endocrinology' }
   ],
   'Fertility': [
     { name: 'AMH', category: 'Fertility' },
@@ -75,42 +41,26 @@ export const TEST_CATEGORIES = {
     { name: 'Progesterone', category: 'Fertility' },
     { name: 'Testosterone', category: 'Fertility' },
     { name: 'DHEAS', category: 'Fertility' },
-    { name: 'Inhibin B', category: 'Fertility' },
     { name: 'Prolactin', category: 'Fertility' }
   ],
   'Pregnancy Test': [
-    { name: 'Beta-hCG', category: 'Pregnancy Test' },
     { name: 'Urine Pregnancy Test', category: 'Pregnancy Test' }
   ],
   'MP': [
-    { name: 'MP 1', category: 'MP' },
-    { name: 'MP 2', category: 'MP' },
-    { name: 'MP 3', category: 'MP' }
+    { name: 'MP 1', category: 'MP' }
   ],
   'Microbiology': [
     { name: 'Urine Culture', category: 'Microbiology' },
-    { name: 'Blood Culture', category: 'Microbiology' },
     { name: 'Throat Swab', category: 'Microbiology' },
     { name: 'Stool Culture', category: 'Microbiology' },
-    { name: 'Wound Swab', category: 'Microbiology' },
-    { name: 'Sputum Culture', category: 'Microbiology' },
-    { name: 'CSF Culture', category: 'Microbiology' },
     { name: 'Antibiotic Sensitivity', category: 'Microbiology' }
   ],
   'Parasitology': [
-    { name: 'Malaria Parasite', category: 'Parasitology' },
-    { name: 'Stool Ova & Parasites', category: 'Parasitology' },
-    { name: 'Blood Parasites', category: 'Parasitology' }
+    { name: 'Malaria Parasite', category: 'Parasitology' }
   ],
   'Serology': [
     { name: 'Widal Test', category: 'Serology' },
-    { name: 'Typhoid Test', category: 'Serology' },
-    { name: 'Brucella Test', category: 'Serology' },
-    { name: 'Leptospira Test', category: 'Serology' },
-    { name: 'Dengue NS1 Antigen', category: 'Serology' },
-    { name: 'Dengue IgM_IgG', category: 'Serology' },
-    { name: 'Chikungunya IgM_IgG', category: 'Serology' },
-    { name: 'Yellow Fever', category: 'Serology' }
+    { name: 'Typhoid Test', category: 'Serology' }
   ],
   'Molecular': [
     { name: 'PCR - COVID-19', category: 'Molecular' },

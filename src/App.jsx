@@ -10,7 +10,7 @@ import { RecordsHistory } from './components/RecordsHistory'
 import { storage } from './lib/storage'
 import { initializeTestRecords } from './lib/testsData'
 import { DailyScheduler } from './lib/scheduler'
-import { Activity, ClipboardList, FileText, Package, History, Lock } from 'lucide-react'
+import { Activity, ClipboardList, FileText, Package, History, Lock, Menu, X } from 'lucide-react'
 
 function App() {
   const [testRecords, setTestRecords] = useState({})
@@ -22,6 +22,7 @@ function App() {
   const [showPasswordPrompt, setShowPasswordPrompt] = useState(false)
   const [password, setPassword] = useState('')
   const [passwordError, setPasswordError] = useState('')
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   useEffect(() => {
     const initializeApp = async () => {
@@ -183,17 +184,30 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-rose-100">
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
-        <header className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            Pink Clinic Test Records
-          </h1>
-          <p className="text-gray-600">
-            Track and manage medical test inventory
-          </p>
+      <div className="container mx-auto px-4 py-4 md:py-8 max-w-6xl">
+        <header className="mb-6 md:mb-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl md:text-4xl font-bold text-gray-900 mb-1 md:mb-2">
+                Pink Clinic Test Records
+              </h1>
+              <p className="text-sm md:text-base text-gray-600">
+                Track and manage medical test inventory
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              size="icon"
+              className="md:hidden"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </Button>
+          </div>
         </header>
 
-        <nav className="flex gap-2 mb-6">
+        {/* Desktop Navigation */}
+        <nav className="hidden md:flex gap-2 mb-6">
           {tabs.map((tab) => (
             <Button
               key={tab.id}
@@ -206,6 +220,26 @@ function App() {
             </Button>
           ))}
         </nav>
+
+        {/* Mobile Navigation */}
+        {mobileMenuOpen && (
+          <nav className="md:hidden flex flex-col gap-2 mb-6">
+            {tabs.map((tab) => (
+              <Button
+                key={tab.id}
+                variant={activeTab === tab.id ? 'default' : 'outline'}
+                onClick={() => {
+                  handleTabChange(tab.id)
+                  setMobileMenuOpen(false)
+                }}
+                className="flex items-center gap-2 justify-start"
+              >
+                <tab.icon className="h-4 w-4" />
+                {tab.label}
+              </Button>
+            ))}
+          </nav>
+        )}
 
         {showPasswordPrompt && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">

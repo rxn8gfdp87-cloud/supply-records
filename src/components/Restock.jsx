@@ -23,7 +23,7 @@ export function Restock({ restockCounts, onUpdateCount }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
           <Package className="h-5 w-5" />
           Restock Management
         </CardTitle>
@@ -32,16 +32,16 @@ export function Restock({ restockCounts, onUpdateCount }) {
         <div className="space-y-6">
           {Object.entries(categories).map(([category, tests]) => (
             <div key={category}>
-              <h3 className="text-lg font-semibold mb-3 text-primary">{category}</h3>
+              <h3 className="text-base sm:text-lg font-semibold mb-3 text-primary">{category}</h3>
               <div className="space-y-2">
                 {tests.map((test) => (
                   <div
                     key={test.id}
-                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 transition-colors"
+                    className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 border rounded-lg hover:bg-accent/50 transition-colors gap-3"
                   >
                     <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <h4 className="font-medium">{test.name}</h4>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h4 className="font-medium text-sm sm:text-base">{test.name}</h4>
                         {test.count <= test.minStock && test.count > 0 && (
                           <span className="flex items-center gap-1 text-xs text-destructive bg-destructive/10 px-2 py-1 rounded">
                             <AlertTriangle className="h-3 w-3" />
@@ -53,7 +53,7 @@ export function Restock({ restockCounts, onUpdateCount }) {
                         Restock Stock: {test.count} • {test.date} • {test.day}
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 self-end sm:self-auto">
                       <Input
                         type="number"
                         min="0"

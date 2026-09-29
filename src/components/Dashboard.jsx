@@ -75,10 +75,10 @@ export function Dashboard({ supplies, testRecords, records, onNavigate, clientCo
   return (
     <div className="space-y-6">
       <div className="text-center mb-4">
-        <h2 className="text-2xl font-bold text-muted-foreground">{currentDay}</h2>
+        <h2 className="text-xl md:text-2xl font-bold text-muted-foreground">{currentDay}</h2>
         <p className="text-sm text-muted-foreground">{currentDate}</p>
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
         {stats.map((stat) => (
           <Card 
             key={stat.title} 
@@ -94,23 +94,26 @@ export function Dashboard({ supplies, testRecords, records, onNavigate, clientCo
             }}
           >
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+              <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground">
                 {stat.title}
-                {stat.clickable && <span className="ml-2 text-xs text-primary">(Click to view)</span>}
+                {stat.clickable && <span className="ml-2 text-xs text-primary hidden sm:inline">(Click to view)</span>}
               </CardTitle>
             </CardHeader>
             <CardContent>
               {stat.showControls ? (
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <stat.icon className={`h-5 w-5 ${stat.color}`} />
-                    <span className="text-2xl font-bold">{stat.value}</span>
+                    <stat.icon className={`h-4 w-4 md:h-5 md:w-5 ${stat.color}`} />
+                    <span className="text-xl md:text-2xl font-bold">{stat.value}</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <Button
                       variant="outline"
                       size="icon"
-                      onClick={() => onUpdateClientCount && onUpdateClientCount(-1)}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onUpdateClientCount && onUpdateClientCount(-1)
+                      }}
                       className="h-6 w-6"
                     >
                       <Minus className="h-3 w-3" />
@@ -118,7 +121,10 @@ export function Dashboard({ supplies, testRecords, records, onNavigate, clientCo
                     <Button
                       variant="outline"
                       size="icon"
-                      onClick={() => onUpdateClientCount && onUpdateClientCount(1)}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onUpdateClientCount && onUpdateClientCount(1)
+                      }}
                       className="h-6 w-6"
                     >
                       <Plus className="h-3 w-3" />
@@ -127,8 +133,8 @@ export function Dashboard({ supplies, testRecords, records, onNavigate, clientCo
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
-                  <stat.icon className={`h-5 w-5 ${stat.color}`} />
-                  <span className="text-2xl font-bold">{stat.value}</span>
+                  <stat.icon className={`h-4 w-4 md:h-5 md:w-5 ${stat.color}`} />
+                  <span className="text-xl md:text-2xl font-bold">{stat.value}</span>
                 </div>
               )}
             </CardContent>
@@ -140,8 +146,8 @@ export function Dashboard({ supplies, testRecords, records, onNavigate, clientCo
         <Card className="border-destructive">
           <CardHeader className="bg-destructive/5">
             <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2 text-destructive">
-                <AlertTriangle className="h-5 w-5" />
+              <CardTitle className="flex items-center gap-2 text-destructive text-base md:text-lg">
+                <AlertTriangle className="h-4 w-4 md:h-5 md:w-5" />
                 Low Stock Details
               </CardTitle>
               <Button
@@ -161,14 +167,14 @@ export function Dashboard({ supplies, testRecords, records, onNavigate, clientCo
                 {lowStockItems.map((item) => (
                   <div
                     key={item.id}
-                    className="flex items-center justify-between p-4 border rounded-lg bg-destructive/5"
+                    className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border rounded-lg bg-destructive/5 gap-2"
                   >
                     <div>
-                      <h4 className="font-medium">{item.name}</h4>
+                      <h4 className="font-medium text-sm sm:text-base">{item.name}</h4>
                       <p className="text-sm text-muted-foreground">{item.category}</p>
                     </div>
-                    <div className="text-right">
-                      <p className="text-2xl font-bold text-destructive">{item.count || item.quantity}</p>
+                    <div className="text-right sm:text-left">
+                      <p className="text-xl md:text-2xl font-bold text-destructive">{item.count || item.quantity}</p>
                       <p className="text-xs text-muted-foreground">Min: {item.minStock || 3}</p>
                     </div>
                   </div>
