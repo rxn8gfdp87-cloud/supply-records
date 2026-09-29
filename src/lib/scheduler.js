@@ -30,7 +30,7 @@ export class DailyScheduler {
   }
 
   // Manually trigger the save (for testing)
-  triggerNow() {
-    this.callback();
+  async triggerNow() {
+    await this.callback();
   }
 }

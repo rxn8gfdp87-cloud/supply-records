@@ -1,6 +1,7 @@
 import { Button } from './ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
-import { Plus, Minus, Package, AlertTriangle } from 'lucide-react'
+import { Input } from './ui/input'
+import { Package, AlertTriangle } from 'lucide-react'
 
 export function Restock({ restockCounts, onUpdateCount }) {
   const categories = Object.keys(restockCounts).reduce((acc, id) => {
@@ -11,6 +12,13 @@ export function Restock({ restockCounts, onUpdateCount }) {
     acc[category].push(restockCounts[id])
     return acc
   }, {})
+
+  const handleInputChange = (id, value) => {
+    const numValue = parseInt(value)
+    if (!isNaN(numValue) && numValue >= 0) {
+      onUpdateCount(id, numValue)
+    }
+  }
 
   return (
     <Card>
@@ -46,25 +54,13 @@ export function Restock({ restockCounts, onUpdateCount }) {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => onUpdateCount(test.id, -1)}
-                        className="h-8 w-8"
-                      >
-                        <Minus className="h-4 w-4" />
-                      </Button>
-                      <span className="w-12 text-center font-semibold text-lg">
-                        {test.count}
-                      </span>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => onUpdateCount(test.id, 1)}
-                        className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50"
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
+                      <Input
+                        type="number"
+                        min="0"
+                        value={test.count}
+                        onChange={(e) => handleInputChange(test.id, e.target.value)}
+                        className="w-20 text-center font-semibold text-lg"
+                      />
                     </div>
                   </div>
                 ))}

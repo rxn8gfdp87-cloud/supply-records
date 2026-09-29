@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Button } from './components/ui/button'
+import { Input } from './components/ui/input'
+import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card'
 import { Dashboard } from './components/Dashboard'
 import { TestRecordList } from './components/TestRecordList'
 import { Reports } from './components/Reports'
@@ -8,7 +10,7 @@ import { RecordsHistory } from './components/RecordsHistory'
 import { storage } from './lib/storage'
 import { initializeTestRecords } from './lib/testsData'
 import { DailyScheduler } from './lib/scheduler'
-import { Activity, ClipboardList, FileText, Package, History } from 'lucide-react'
+import { Activity, ClipboardList, FileText, Package, History, Lock } from 'lucide-react'
 
 function App() {
   const [testRecords, setTestRecords] = useState({})
@@ -16,77 +18,86 @@ function App() {
   const [clientCount, setClientCount] = useState(0)
   const [records, setRecords] = useState([])
   const [activeTab, setActiveTab] = useState('records')
+  const [isRestockAuthenticated, setIsRestockAuthenticated] = useState(false)
+  const [showPasswordPrompt, setShowPasswordPrompt] = useState(false)
+  const [password, setPassword] = useState('')
+  const [passwordError, setPasswordError] = useState('')
 
   useEffect(() => {
-    // Initialize test records if not exists
-    const existingRecords = storage.getTestRecords()
-    const initialRecords = initializeTestRecords()
-    const now = new Date()
-    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-    
-    if (Object.keys(existingRecords).length === 0) {
-      storage.setTestRecords(initialRecords)
-      setTestRecords(initialRecords)
-    } else {
-      // Update existing records and add any new tests
-      Object.keys(initialRecords).forEach(key => {
-        if (!existingRecords[key]) {
-          // Add new test
-          existingRecords[key] = initialRecords[key]
-        } else {
-          // Update existing test fields
-          if (existingRecords[key].minStock !== 3) {
-            existingRecords[key].minStock = 3
-          }
-          if (!existingRecords[key].date) {
-            existingRecords[key].date = now.toISOString().split('T')[0]
-            existingRecords[key].day = days[now.getDay()]
-            existingRecords[key].lastUpdated = now.toISOString()
-          }
-        }
-      })
-      storage.setTestRecords(existingRecords)
-      setTestRecords(existingRecords)
-    }
-    
-    setRecords(storage.getUsageRecords())
-    
-    // Initialize client count
-    setClientCount(storage.getClientCount())
-    
-    // Initialize restock counts separately
-    const existingRestockCounts = storage.getRestockCounts()
-    const initializedRestockCounts = storage.initializeRestockCounts(initialRecords)
-    setRestockCounts(initializedRestockCounts)
-    
-    // Initialize daily scheduler at 9pm
-    const scheduler = new DailyScheduler(() => {
-      storage.saveDailySnapshot()
-      // Reset only test records (daily usage), not restock counts
-      const records = storage.getTestRecords()
+    const initializeApp = async () => {
+      // Initialize test records if not exists
+      const existingRecords = await storage.getTestRecords()
+      const initialRecords = initializeTestRecords()
       const now = new Date()
       const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
       
-      Object.keys(records).forEach(key => {
-        records[key].count = 0
-        records[key].lastUpdated = now.toISOString()
-        records[key].date = now.toISOString().split('T')[0]
-        records[key].day = days[now.getDay()]
-      })
-      storage.setTestRecords(records)
-      setTestRecords(records)
+      if (Object.keys(existingRecords).length === 0) {
+        await storage.setTestRecords(initialRecords)
+        setTestRecords(initialRecords)
+      } else {
+        // Update existing records and add any new tests
+        Object.keys(initialRecords).forEach(key => {
+          if (!existingRecords[key]) {
+            // Add new test
+            existingRecords[key] = initialRecords[key]
+          } else {
+            // Update existing test fields
+            if (existingRecords[key].minStock !== 3) {
+              existingRecords[key].minStock = 3
+            }
+            if (!existingRecords[key].date) {
+              existingRecords[key].date = now.toISOString().split('T')[0]
+              existingRecords[key].day = days[now.getDay()]
+              existingRecords[key].lastUpdated = now.toISOString()
+            }
+          }
+        })
+        await storage.setTestRecords(existingRecords)
+        setTestRecords(existingRecords)
+      }
       
-      console.log('Daily snapshot saved and test records reset at 9:00 PM')
-    }, 21, 0) // 9:00 PM
-    scheduler.start()
-    
-    return () => {
-      scheduler.stop()
+      setRecords(storage.getUsageRecords())
+      
+      // Initialize client count
+      const clientCount = await storage.getClientCount()
+      setClientCount(clientCount)
+      
+      // Initialize restock counts separately
+      const existingRestockCounts = await storage.getRestockCounts()
+      const initializedRestockCounts = await storage.initializeRestockCounts(initialRecords)
+      setRestockCounts(initializedRestockCounts)
+      
+      // Initialize daily scheduler at 9pm
+      const scheduler = new DailyScheduler(async () => {
+        await storage.saveDailySnapshot()
+        // Reset only test records (daily usage), not restock counts
+        const records = await storage.getTestRecords()
+        const now = new Date()
+        const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+        
+        Object.keys(records).forEach(key => {
+          records[key].count = 0
+          records[key].lastUpdated = now.toISOString()
+          records[key].date = now.toISOString().split('T')[0]
+          records[key].day = days[now.getDay()]
+        })
+        await storage.setTestRecords(records)
+        setTestRecords(records)
+        
+        console.log('Daily snapshot saved and test records reset at 9:00 PM')
+      }, 21, 0) // 9:00 PM
+      scheduler.start()
+      
+      return () => {
+        scheduler.stop()
+      }
     }
+    
+    initializeApp()
   }, [])
 
-  const handleUpdateCount = (id, delta) => {
-    const result = storage.updateTestCount(id, delta)
+  const handleUpdateCount = async (id, delta) => {
+    const result = await storage.updateTestCount(id, delta)
     if (result && result.records) {
       setTestRecords(result.records)
       if (result.restockCounts) {
@@ -95,29 +106,29 @@ function App() {
     }
   }
 
-  const handleUpdateResult = (id) => {
-    const updatedRecords = storage.updateTestResult(id, 1)
+  const handleUpdateResult = async (id) => {
+    const updatedRecords = await storage.updateTestResult(id, 1)
     setTestRecords(updatedRecords)
   }
 
-  const handleDecrementResult = (id) => {
-    const updatedRecords = storage.updateTestResult(id, -1)
+  const handleDecrementResult = async (id) => {
+    const updatedRecords = await storage.updateTestResult(id, -1)
     setTestRecords(updatedRecords)
   }
 
-  const handleUpdateRestockCount = (id, delta) => {
-    const updatedCounts = storage.updateRestockCount(id, delta)
+  const handleUpdateRestockCount = async (id, value) => {
+    const updatedCounts = await storage.setRestockCount(id, value)
     setRestockCounts(updatedCounts)
   }
 
-  const handleUpdateClientCount = (delta) => {
-    const newCount = storage.updateClientCount(delta)
+  const handleUpdateClientCount = async (delta) => {
+    const newCount = await storage.updateClientCount(delta)
     setClientCount(newCount)
   }
 
-  const handleResetAll = () => {
+  const handleResetAll = async () => {
     if (confirm('Are you sure you want to reset all test counts to zero?')) {
-      const result = storage.resetAllCounts()
+      const result = await storage.resetAllCounts()
       if (result && result.records) {
         setTestRecords(result.records)
         if (result.restockCounts) {
@@ -129,7 +140,33 @@ function App() {
 
   const handleNavigate = (action) => {
     if (action === 'restock') {
+      if (!isRestockAuthenticated) {
+        setShowPasswordPrompt(true)
+      } else {
+        setActiveTab('restock')
+      }
+    }
+  }
+
+  const handlePasswordSubmit = (e) => {
+    e.preventDefault()
+    const RESTOCK_PASSWORD = 'admin123' // Change this to your desired password
+    if (password === RESTOCK_PASSWORD) {
+      setIsRestockAuthenticated(true)
+      setShowPasswordPrompt(false)
       setActiveTab('restock')
+      setPassword('')
+      setPasswordError('')
+    } else {
+      setPasswordError('Incorrect password')
+    }
+  }
+
+  const handleTabChange = (tabId) => {
+    if (tabId === 'restock' && !isRestockAuthenticated) {
+      setShowPasswordPrompt(true)
+    } else {
+      setActiveTab(tabId)
     }
   }
 
@@ -161,7 +198,7 @@ function App() {
             <Button
               key={tab.id}
               variant={activeTab === tab.id ? 'default' : 'outline'}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => handleTabChange(tab.id)}
               className="flex items-center gap-2"
             >
               <tab.icon className="h-4 w-4" />
@@ -169,6 +206,52 @@ function App() {
             </Button>
           ))}
         </nav>
+
+        {showPasswordPrompt && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <Card className="w-full max-w-md">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Lock className="h-5 w-5" />
+                  Restock Access
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handlePasswordSubmit} className="space-y-4">
+                  <div>
+                    <Input
+                      type="password"
+                      placeholder="Enter password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="w-full"
+                    />
+                    {passwordError && (
+                      <p className="text-sm text-destructive mt-2">{passwordError}</p>
+                    )}
+                  </div>
+                  <div className="flex gap-2">
+                    <Button type="submit" className="flex-1">
+                      Submit
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        setShowPasswordPrompt(false)
+                        setPassword('')
+                        setPasswordError('')
+                      }}
+                      className="flex-1"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         <div className="space-y-6">
           {activeTab === 'records' && (

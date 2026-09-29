@@ -1,3 +1,5 @@
+import * as firebaseService from './firebaseService'
+
 const STORAGE_KEYS = {
   TEST_RECORDS: 'test_records',
   USAGE_RECORDS: 'usage_records',
@@ -6,19 +8,29 @@ const STORAGE_KEYS = {
   RESTOCK_COUNTS: 'restock_counts'
 };
 
+// Flag to use Firebase or localStorage
+const USE_FIREBASE = true
+
 export const storage = {
-  getTestRecords: () => {
+  getTestRecords: async () => {
+    if (USE_FIREBASE) {
+      const result = await firebaseService.getTestRecords()
+      if (result.success) return result.data
+    }
     const data = localStorage.getItem(STORAGE_KEYS.TEST_RECORDS);
     return data ? JSON.parse(data) : {};
   },
   
-  setTestRecords: (records) => {
+  setTestRecords: async (records) => {
+    if (USE_FIREBASE) {
+      await firebaseService.saveTestRecords(records)
+    }
     localStorage.setItem(STORAGE_KEYS.TEST_RECORDS, JSON.stringify(records));
   },
   
-  updateTestCount: (id, delta) => {
-    const records = storage.getTestRecords();
-    const restockCounts = storage.getRestockCounts();
+  updateTestCount: async (id, delta) => {
+    const records = await storage.getTestRecords();
+    const restockCounts = await storage.getRestockCounts();
     const now = new Date();
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     
@@ -39,7 +51,7 @@ export const storage = {
         restockCounts[id].lastUpdated = now.toISOString();
         restockCounts[id].date = now.toISOString().split('T')[0];
         restockCounts[id].day = days[now.getDay()];
-        storage.setRestockCounts(restockCounts);
+        await storage.setRestockCounts(restockCounts);
       }
       
       records[id].count = newTestCount;
@@ -50,13 +62,13 @@ export const storage = {
       // Initialize positive field if not present
       if (!records[id].positive) records[id].positive = 0;
       
-      storage.setTestRecords(records);
+      await storage.setTestRecords(records);
     }
     return { records, restockCounts };
   },
 
-  updateTestResult: (id, delta = 1) => {
-    const records = storage.getTestRecords();
+  updateTestResult: async (id, delta = 1) => {
+    const records = await storage.getTestRecords();
     const now = new Date();
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     
@@ -68,24 +80,31 @@ export const storage = {
       records[id].date = now.toISOString().split('T')[0];
       records[id].day = days[now.getDay()];
       
-      storage.setTestRecords(records);
+      await storage.setTestRecords(records);
     }
     return records;
   },
 
-  updateClientCount: (delta) => {
-    const clientCount = storage.getClientCount();
+  updateClientCount: async (delta) => {
+    const clientCount = await storage.getClientCount();
     const newCount = Math.max(0, clientCount + delta);
-    storage.setClientCount(newCount);
+    await storage.setClientCount(newCount);
     return newCount;
   },
 
-  getClientCount: () => {
+  getClientCount: async () => {
+    if (USE_FIREBASE) {
+      const result = await firebaseService.getClientCount()
+      if (result.success) return result.data
+    }
     const data = localStorage.getItem('client_count');
     return data ? parseInt(data) : 0;
   },
 
-  setClientCount: (count) => {
+  setClientCount: async (count) => {
+    if (USE_FIREBASE) {
+      await firebaseService.saveClientCount(count)
+    }
     localStorage.setItem('client_count', count.toString());
   },
   
@@ -144,25 +163,34 @@ export const storage = {
     return { records, restockCounts };
   },
   
-  getDailySnapshots: () => {
+  getDailySnapshots: async () => {
+    if (USE_FIREBASE) {
+      const result = await firebaseService.getAllDailyRecords()
+      if (result.success) return result.data
+    }
     const data = localStorage.getItem(STORAGE_KEYS.DAILY_SNAPSHOTS);
     return data ? JSON.parse(data) : [];
   },
   
-  saveDailySnapshot: () => {
-    const testRecords = storage.getTestRecords();
-    const clientCount = storage.getClientCount();
-    const snapshots = storage.getDailySnapshots();
+  saveDailySnapshot: async () => {
+    const testRecords = await storage.getTestRecords();
+    const clientCount = await storage.getClientCount();
     const today = new Date().toISOString().split('T')[0];
     
-    // Check if snapshot already exists for today
-    const existingIndex = snapshots.findIndex(s => s.date === today);
     const snapshot = {
       date: today,
-      timestamp: new Date().toISOString(),
       records: testRecords,
       clientCount: clientCount
     };
+    
+    // Save to Firebase
+    if (USE_FIREBASE) {
+      await firebaseService.saveDailyRecord(today, snapshot)
+    }
+    
+    // Also save to localStorage as backup
+    const snapshots = storage.getDailySnapshots();
+    const existingIndex = snapshots.findIndex(s => s.date === today);
     
     if (existingIndex !== -1) {
       snapshots[existingIndex] = snapshot;
@@ -174,20 +202,25 @@ export const storage = {
     return snapshot;
   },
 
-  saveManualSnapshot: (date) => {
-    const testRecords = storage.getTestRecords();
-    const clientCount = storage.getClientCount();
-    const snapshots = storage.getDailySnapshots();
+  saveManualSnapshot: async (date) => {
+    const testRecords = await storage.getTestRecords();
+    const clientCount = await storage.getClientCount();
     const snapshotDate = date || new Date().toISOString().split('T')[0];
     
-    // Check if snapshot already exists for this date
-    const existingIndex = snapshots.findIndex(s => s.date === snapshotDate);
     const snapshot = {
       date: snapshotDate,
-      timestamp: new Date().toISOString(),
       records: testRecords,
       clientCount: clientCount
     };
+    
+    // Save to Firebase
+    if (USE_FIREBASE) {
+      await firebaseService.saveDailyRecord(snapshotDate, snapshot)
+    }
+    
+    // Also save to localStorage as backup
+    const snapshots = storage.getDailySnapshots();
+    const existingIndex = snapshots.findIndex(s => s.date === snapshotDate);
     
     if (existingIndex !== -1) {
       snapshots[existingIndex] = snapshot;
@@ -255,17 +288,24 @@ export const storage = {
     storage.setRestockRecords(records);
   },
   
-  getRestockCounts: () => {
+  getRestockCounts: async () => {
+    if (USE_FIREBASE) {
+      const result = await firebaseService.getRestockCounts()
+      if (result.success) return result.data
+    }
     const data = localStorage.getItem(STORAGE_KEYS.RESTOCK_COUNTS);
     return data ? JSON.parse(data) : {};
   },
   
-  setRestockCounts: (counts) => {
+  setRestockCounts: async (counts) => {
+    if (USE_FIREBASE) {
+      await firebaseService.saveRestockCounts(counts)
+    }
     localStorage.setItem(STORAGE_KEYS.RESTOCK_COUNTS, JSON.stringify(counts));
   },
   
-  updateRestockCount: (id, delta) => {
-    const counts = storage.getRestockCounts();
+  updateRestockCount: async (id, delta) => {
+    const counts = await storage.getRestockCounts();
     if (counts[id]) {
       counts[id].count = Math.max(0, counts[id].count + delta);
       const now = new Date();
@@ -273,13 +313,27 @@ export const storage = {
       counts[id].lastUpdated = now.toISOString();
       counts[id].date = now.toISOString().split('T')[0];
       counts[id].day = days[now.getDay()];
-      storage.setRestockCounts(counts);
+      await storage.setRestockCounts(counts);
+    }
+    return counts;
+  },
+
+  setRestockCount: async (id, value) => {
+    const counts = await storage.getRestockCounts();
+    if (counts[id]) {
+      counts[id].count = Math.max(0, parseInt(value));
+      const now = new Date();
+      const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      counts[id].lastUpdated = now.toISOString();
+      counts[id].date = now.toISOString().split('T')[0];
+      counts[id].day = days[now.getDay()];
+      await storage.setRestockCounts(counts);
     }
     return counts;
   },
   
-  initializeRestockCounts: (testRecords) => {
-    const counts = storage.getRestockCounts();
+  initializeRestockCounts: async (testRecords) => {
+    const counts = await storage.getRestockCounts();
     const now = new Date();
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     
@@ -298,7 +352,7 @@ export const storage = {
       }
     });
     
-    storage.setRestockCounts(counts);
+    await storage.setRestockCounts(counts);
     return counts;
   }
 };

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from './ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react'
@@ -6,8 +6,19 @@ import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react'
 export function RecordsHistory({ storage }) {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
   const [selectedSnapshot, setSelectedSnapshot] = useState(null)
+  const [snapshots, setSnapshots] = useState([])
+  const [loading, setLoading] = useState(true)
 
-  const snapshots = storage.getDailySnapshots()
+  useEffect(() => {
+    const loadSnapshots = async () => {
+      setLoading(true)
+      const data = await storage.getDailySnapshots()
+      setSnapshots(data)
+      setLoading(false)
+    }
+    loadSnapshots()
+  }, [storage])
+
   const uniqueDates = [...new Set(snapshots.map(s => s.date))].sort().reverse()
 
   const loadSnapshot = (date) => {

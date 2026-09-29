@@ -11,16 +11,20 @@ export function Reports({ storage }) {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
   const [currentReport, setCurrentReport] = useState(null)
   const [saveDate, setSaveDate] = useState(new Date().toISOString().split('T')[0])
+  const [loading, setLoading] = useState(false)
 
-  const saveSnapshot = () => {
-    storage.saveManualSnapshot(saveDate)
+  const saveSnapshot = async () => {
+    setLoading(true)
+    await storage.saveManualSnapshot(saveDate)
     alert(`Snapshot saved for ${saveDate}`)
+    setLoading(false)
   }
 
-  const generateReport = () => {
+  const generateReport = async () => {
+    setLoading(true)
     let report
     if (reportType === 'daily') {
-      const snapshots = storage.getDailySnapshots()
+      const snapshots = await storage.getDailySnapshots()
       const snapshot = snapshots.find(s => s.date === selectedDate)
       report = {
         period: 'Daily',
@@ -33,6 +37,7 @@ export function Reports({ storage }) {
       report = storage.generateMonthlyReport()
     }
     setCurrentReport(report)
+    setLoading(false)
   }
 
   const downloadReport = (format = 'txt') => {
